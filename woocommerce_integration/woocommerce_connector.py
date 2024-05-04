@@ -1,9 +1,8 @@
+from frappe.utils.data import cint
+from requests import HTTPError
 from woocommerce import API as WCAPI
 
-from woocommerce_integration.general_utils import (
-    build_filter_string,
-    log_woocommerce_error,
-)
+from woocommerce_integration.general_utils import log_woocommerce_error
 
 
 class WooCommerceConnector:
@@ -22,80 +21,51 @@ class WooCommerceConnector:
             timeout=1000,
         )
 
-    def get_products(self, **kwargs):
-        filter_string = build_filter_string(kwargs)
+    def _request(self, method, endpoint, data=None, params=None, **kwargs):
+        response = self.woocommerce.__request(method, endpoint, data, params, **kwargs)
+
         try:
-            response = self.woocommerce.get(
-                f'products{f"?{filter_string}" if filter_string else ""}'
-            )
             response.raise_for_status()
-            return response.json()
-        except Exception:
+        except HTTPError as e:
             log_woocommerce_error(response)
-            raise
+            raise e
+
+        return response
+
+    def get_products(self, **kwargs):
+        response = self._request("GET", "products", params=kwargs)
+        return response.json()
 
     def get_product(self, id: str):
-        try:
-            response = self.woocommerce.get(f"products/{id}")
-            response.raise_for_status()
-            return response.json()
-        except Exception:
-            log_woocommerce_error(response)
-            raise
+        response = self._request("GET", f"products/{id}")
+        return response.json()
 
     def create_product(self, product_data: dict):
-        try:
-            response = self.woocommerce.post("products", product_data)
-            response.raise_for_status()
-            return response.json()
-        except Exception:
-            log_woocommerce_error(response)
-            raise
+        response = self._request("POST", "products", data=product_data)
+        return response.json()
 
     def update_product(self, id: str, product_data: dict):
-        try:
-            response = self.woocommerce.put(f"products/{id}", product_data)
-            response.raise_for_status()
-            return response.json()
-        except Exception:
-            log_woocommerce_error(response)
-            raise
+        response = self._request("PUT", f"products/{id}", data=product_data)
+        return response.json()
 
     def batch_update_products(self, product_data: dict):
-        try:
-            response = self.woocommerce.post("products/batch", product_data)
-            response.raise_for_status()
-            return response.json()
-        except Exception:
-            log_woocommerce_error(response)
-            raise
+        response = self._request("POST", "products/batch", data=product_data)
+        return response.json()
 
     def delete_product(self, id: str):
-        try:
-            response = self.woocommerce.delete(f"products/{id}")
-            response.raise_for_status()
-            return response.json()
-        except Exception:
-            log_woocommerce_error(response)
-            raise
+        response = self._request("DELETE", f"products/{id}")
+        return response.json()
 
     def get_orders(self, **kwargs):
-        filter_string = build_filter_string(kwargs)
-        try:
-            response = self.woocommerce.get(
-                f'orders{f"?{filter_string}" if filter_string else ""}'
+        response = self._request("GET", "orders", params=kwargs)
+        yield from response.json()
+
+        pages = cint(response.headers.get("X-WP-TotalPages") or 1)
+        for page_idx in range(1, pages):
+            response = self._request(
+                "GET", "orders", params={**kwargs, "page": page_idx + 1}
             )
-            response.raise_for_status()
-            return response
-        except Exception:
-            log_woocommerce_error(response)
-            raise
+            yield from response.json()
 
     def get_order(self, id: str):
-        try:
-            response = self.woocommerce.get(f"orders/{id}")
-            response.raise_for_status()
-            return response.json()
-        except Exception:
-            log_woocommerce_error(response)
-            raise
+        return self._request("GET", f"orders/{id}").json()
