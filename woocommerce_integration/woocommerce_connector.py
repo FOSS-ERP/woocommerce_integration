@@ -22,7 +22,9 @@ class WooCommerceConnector:
         )
 
     def _request(self, method, endpoint, data=None, params=None, **kwargs):
-        response = self.woocommerce.__request(method, endpoint, data, params, **kwargs)
+        response = self.woocommerce.__getattribute__(method.lower())(
+            endpoint, data=data, params=params, **kwargs
+        )
 
         try:
             response.raise_for_status()
