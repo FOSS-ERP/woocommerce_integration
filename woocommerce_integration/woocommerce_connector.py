@@ -1,8 +1,5 @@
 from frappe.utils.data import cint
-from requests import HTTPError
 from woocommerce import API as WCAPI
-
-from woocommerce_integration.general_utils import log_woocommerce_error
 
 
 class WooCommerceConnector:
@@ -25,13 +22,7 @@ class WooCommerceConnector:
         response = self.woocommerce.__getattribute__(method.lower())(
             endpoint, data=data, params=params, **kwargs
         )
-
-        try:
-            response.raise_for_status()
-        except HTTPError as e:
-            log_woocommerce_error(response)
-            raise e
-
+        response.raise_for_status()
         return response
 
     def get_products(self, **kwargs):
