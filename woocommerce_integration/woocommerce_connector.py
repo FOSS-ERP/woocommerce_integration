@@ -19,8 +19,19 @@ class WooCommerceConnector:
         )
 
     def _request(self, method, endpoint, data=None, params=None, **kwargs):
-        response = self.woocommerce.__getattribute__(method.lower())(
-            endpoint, data=data, params=params, **kwargs
+        woocomm_method = method.lower()
+        positional_args = (
+            (
+                endpoint,
+                data,
+            )
+            if woocomm_method in ("post", "put")
+            else (endpoint,)
+        )
+
+        kwargs["params"] = params
+        response = self.woocommerce.__getattribute__(woocomm_method)(
+            *positional_args, **kwargs
         )
         response.raise_for_status()
         return response

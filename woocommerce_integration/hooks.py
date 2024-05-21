@@ -3,7 +3,7 @@ app_title = "Woocommerce-ERPNext Integration"
 app_publisher = "ALYF GmbH"
 app_description = "A WooCommerce Integration for ERPNext"
 app_email = "hallo@alyf.de"
-app_license = "MIT"
+app_license = "GNU General Public License (v3)"
 required_apps = ["frappe/erpnext"]
 
 after_install = "woocommerce_integration.install.after_install"
