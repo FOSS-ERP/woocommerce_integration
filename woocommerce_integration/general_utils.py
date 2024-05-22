@@ -48,32 +48,6 @@ def process_request_data() -> Tuple[bool, Optional[dict]]:
     return False, order
 
 
-def build_filter_string(filters: dict) -> str:
-    """
-    Build a filter string from a dict for the WooCommerce API.
-    """
-
-    def clean_value(value):
-        return (
-            ",".join(value)
-            if isinstance(
-                value,
-                (
-                    list,
-                    tuple,
-                ),
-            )
-            else value
-        )
-
-    if not filters:
-        return ""
-
-    return "&".join(
-        [f"{key}={clean_value(value)}" for key, value in filters.items() if value]
-    )
-
-
 def log_woocommerce_error(response: dict):
     log_response = (
         (

@@ -73,24 +73,8 @@ def get_woocommerce_orders():
         else None
     )
     per_page = cint(setup.order_per_page) or 10
-    orders = []
-
-    order_response = woocommerce.get_orders(
+    return woocommerce.get_orders(
         per_page=per_page,
         modified_after=last_sync_datetime,
         status=setup.order_status_filters,
     )
-
-    orders.extend(order_response.json())
-    pages = cint(order_response.headers.get("X-WP-TotalPages") or 1)
-
-    for page_idx in range(1, pages):
-        order_response = woocommerce.get_orders(
-            page=page_idx + 1,
-            per_page=per_page,
-            modified_after=last_sync_datetime,
-            status=setup.order_status_filters,
-        )
-        orders.extend(order_response.json())
-
-    return orders
