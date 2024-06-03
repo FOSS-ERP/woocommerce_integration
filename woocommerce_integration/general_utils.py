@@ -54,7 +54,7 @@ def update_woocommerce_sync(field: str, date_time: str | datetime):
     if isinstance(date_time, str):
         date_time = get_datetime(date_time)
 
-    frappe.db.set_value("WooCommerce Setup", None, field, date_time)
+    frappe.db.set_single_value("WooCommerce Setup", field, date_time)
 
 
 def log_woocommerce_error(response: dict):
