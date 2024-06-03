@@ -1,7 +1,10 @@
 import frappe
 from frappe.utils import cint, get_datetime
 
-from woocommerce_integration.general_utils import get_woocommerce_setup
+from woocommerce_integration.general_utils import (
+    get_woocommerce_setup,
+    update_woocommerce_sync,
+)
 from woocommerce_integration.order_creation_utils import create_sales_order
 from woocommerce_integration.woocommerce_connector import WooCommerceConnector
 
@@ -41,9 +44,7 @@ def batch_sync_stock():
     if data["update"]:
         connector = WooCommerceConnector(setup)
         connector.batch_update_products(data)
-        frappe.db.set_value(
-            "WooCommerce Setup", None, "last_stock_sync", frappe.utils.now()
-        )
+        update_woocommerce_sync("last_stock_sync", get_datetime())
 
 
 @frappe.whitelist()
@@ -55,12 +56,13 @@ def batch_sync_order():
     if not setup.enable_order_sync:
         return
 
+    last_sync_datetime = None
     for order in get_woocommerce_orders():
+        last_sync_datetime = order.get("date_modified")
         create_sales_order(order, setup)
 
-    frappe.db.set_value(
-        "WooCommerce Setup", None, "last_order_sync", frappe.utils.now()
-    )
+    if last_sync_datetime:
+        update_woocommerce_sync("last_order_sync", last_sync_datetime)
 
 
 def get_woocommerce_orders():
@@ -77,4 +79,6 @@ def get_woocommerce_orders():
         per_page=per_page,
         modified_after=last_sync_datetime,
         status=setup.order_status_filters,
+        orderby="modified",
+        order="asc",
     )

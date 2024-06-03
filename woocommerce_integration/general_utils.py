@@ -1,11 +1,13 @@
 import base64
 import hashlib
 import json
+from datetime import datetime
 from hmac import new as HMAC
 from typing import Optional, Tuple
 
 import frappe
 from frappe import _
+from frappe.utils import get_datetime
 
 
 def get_woocommerce_setup():
@@ -46,6 +48,13 @@ def process_request_data() -> Tuple[bool, Optional[dict]]:
         return (True, None) if "webhook_id" in order else (False, json.loads(order))
 
     return False, order
+
+
+def update_woocommerce_sync(field: str, date_time: str | datetime):
+    if isinstance(date_time, str):
+        date_time = get_datetime(date_time)
+
+    frappe.db.set_single_value("WooCommerce Setup", field, date_time)
 
 
 def log_woocommerce_error(response: dict):
