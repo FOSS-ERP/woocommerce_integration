@@ -74,6 +74,7 @@ def create_address(raw_data: dict, customer: dict, address_type: str):
         return
 
     address = frappe.new_doc("Address")
+    address.address_title = customer.get("customer_name")
     address.address_line1 = raw_data.get("address_1", "Not Provided")
     address.address_line2 = raw_data.get("address_2")
     address.city = raw_data.get("city", "Not Provided")
