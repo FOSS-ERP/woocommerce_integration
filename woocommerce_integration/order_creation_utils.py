@@ -220,7 +220,7 @@ def add_tax_details(sales_order, price, desc, tax_account_head):
     sales_order.append(
         "taxes",
         {
-            "charge_type": "Actual",
+            "charge_type": "On Net Total",
             "account_head": tax_account_head,
             "tax_amount": price,
             "description": desc,
