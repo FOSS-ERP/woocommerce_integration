@@ -145,6 +145,10 @@ def create_order(order: dict, woocommerce_setup: dict, customer: str):
 
     add_items_to_sales_order(order, sales_order, woocommerce_setup)
 
+    sales_order.flags.ignore_permissions = True
+    sales_order.run_method("set_missing_values")
+    sales_order.run_method("calculate_taxes_and_totals")
+
     sales_order.flags.ignore_mandatory = True
     sales_order.insert()
     sales_order.submit()
@@ -167,24 +171,6 @@ def add_items_to_sales_order(order: dict, sales_order: dict, setup: dict):
                 "warehouse": setup.default_warehouse,
             },
         )
-
-        if ordered_items_tax := flt(line_item.get("total_tax")):
-            add_tax_details(
-                sales_order, ordered_items_tax, "Item Tax", setup.tax_account
-            )
-
-    add_tax_details(
-        sales_order,
-        flt(order.get("shipping_tax")),
-        "Shipping Tax",
-        setup.shipping_tax_account,
-    )
-    add_tax_details(
-        sales_order,
-        flt(order.get("shipping_total")),
-        "Shipping Total",
-        setup.shipping_tax_account,
-    )
 
 
 def get_item(item_data: dict, setup: dict) -> dict:
@@ -211,18 +197,3 @@ def create_item(item_data: dict, woo_com_id: str, setup: dict):
     item.save()
 
     return item
-
-
-def add_tax_details(sales_order, price, desc, tax_account_head):
-    if not price:
-        return
-
-    sales_order.append(
-        "taxes",
-        {
-            "charge_type": "Actual",
-            "account_head": tax_account_head,
-            "tax_amount": price,
-            "description": desc,
-        },
-    )
