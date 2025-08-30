@@ -179,25 +179,6 @@ def add_items_to_sales_order(order: dict, sales_order: dict, setup: dict):
     
 
 
-    #     if ordered_items_tax := flt(line_item.get("total_tax")):
-    #         add_tax_details(
-    #             sales_order, ordered_items_tax, "Item Tax", setup.tax_account
-    #         )
-
-    # add_tax_details(
-    #     sales_order,
-    #     flt(order.get("shipping_tax")),
-    #     "Shipping Tax",
-    #     setup.shipping_tax_account,
-    # )
-    # add_tax_details(
-    #     sales_order,
-    #     flt(order.get("shipping_total")),
-    #     "Shipping Total",
-    #     setup.shipping_tax_account,
-    # )
-
-
 def get_item(item_data: dict, setup: dict) -> dict:
     """Get item document or create it if it does not exist."""
     woo_com_id = item_data["product_id"]
@@ -222,18 +203,3 @@ def create_item(item_data: dict, woo_com_id: str, setup: dict):
     item.save()
 
     return item
-
-
-def add_tax_details(sales_order, price, desc, tax_account_head):
-    if not price:
-        return
-
-    sales_order.append(
-        "taxes",
-        {
-            "charge_type": "On Net Total",
-            "account_head": tax_account_head,
-            "tax_amount": price,
-            "description": desc,
-        },
-    )
