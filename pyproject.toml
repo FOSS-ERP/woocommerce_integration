@@ -4,7 +4,7 @@ authors = [
     { name = "ALYF GmbH", email = "hallo@alyf.de"}
 ]
 description = "A WooCommerce Integration for ERPNext"
-requires-python = ">=3.10,<3.13"
+requires-python = ">=3.10,<3.15"
 readme = "README.md"
 dynamic = ["version"]
 dependencies = [
